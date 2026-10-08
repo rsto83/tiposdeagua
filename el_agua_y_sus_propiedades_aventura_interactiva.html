@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Aventura con Goti! El Agua y sus Secretos</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Fredoka for headers & Quicksand for body text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Fredoka', cursive;
+        }
+
+        /* Floating background bubbles animation */
+        .bubble {
+            position: fixed;
+            bottom: -50px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) scale(0.8);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-110vh) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* Custom Bounce Effect */
+        @keyframes floatGentle {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+
+        .animate-goti {
+            animation: floatGentle 3s ease-in-out infinite;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e0f2fe;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #38bdf8;
+            border-radius: 10px;
+        }
+
+        /* Card Hover Effects */
+        .interactive-card {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .interactive-card:hover {
+            transform: translateY(-8px) scale(1.02);
+        }
+
+        /* Thermometer Range Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 18px;
+            cursor: pointer;
+            background: linear-gradient(to right, #3b82f6 0%, #38bdf8 45%, #f59e0b 80%, #ef4444 100%);
+            border-radius: 10px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 32px;
+            width: 32px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 4px solid #0284c7;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 3px solid rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+<body class="text-slate-800 pb-16">
+
+    <div id="bubbles-container"></div>
+
+    <header class="sticky top-0 z-50 glass-panel shadow-md mb-6">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="scrollToSection('hero')">
+                <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white text-2xl shadow-lg animate-bounce">
+                    💧
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-sky-700 leading-none">Mundo Agua</h1>
+                    <span class="text-xs font-semibold text-sky-500 tracking-wider">¡CIENCIA INTERACTIVA! 4° PRIMARIA</span>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="flex flex-wrap gap-2 text-sm font-bold">
+                <button onclick="scrollToSection('estados')" class="px-3 py-2 rounded-xl bg-sky-100 text-sky-700 hover:bg-sky-500 hover:text-white transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-temperature-three-quarters"></i> Estados
+                </button>
+                <button onclick="scrollToSection('propiedades')" class="px-3 py-2 rounded-xl bg-teal-100 text-teal-700 hover:bg-teal-500 hover:text-white transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-flask"></i> Experimentos
+                </button>
+                <button onclick="scrollToSection('tipos')" class="px-3 py-2 rounded-xl bg-blue-100 text-blue-700 hover:bg-blue-500 hover:text-white transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-earth-americas"></i> Tipos de Agua
+                </button>
+                <button onclick="scrollToSection('trivia')" class="px-3 py-2 rounded-xl bg-amber-400 text-amber-900 hover:bg-amber-500 hover:text-white transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-award"></i> Misión Detective
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 space-y-12 relative z-10">
+
+        <section id="hero" class="glass-panel rounded-3xl p-6 md:p-10 shadow-xl border-4 border-white text-center relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-sky-300 rounded-full blur-2xl opacity-50"></div>
+            <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-blue-400 rounded-full blur-2xl opacity-50"></div>
+
+            <div class="grid md:grid-cols-12 items-center gap-6 relative z-10">
+                <!-- Goti Mascot Interactive Canvas / SVG -->
+                <div class="md:col-span-4 flex flex-col items-center">
+                    <div class="relative cursor-pointer group" onclick="reactGoti()">
+                        <!-- Dynamic SVG Water Drop Mascot -->
+                        <div id="goti-svg-container" class="w-48 h-48 animate-goti filter drop-shadow-xl transition-transform group-hover:scale-105">
+                            <!-- SVG Rendered by JS -->
+                        </div>
+                        <span class="absolute -bottom-2 bg-amber-400 text-amber-950 text-xs font-bold px-3 py-1 rounded-full shadow-md animate-pulse">
+                            ¡Hazme clic! 🖐️
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Speech Bubble & Greeting -->
+                <div class="md:col-span-8 text-left space-y-4">
+                    <div class="bg-white p-5 rounded-2xl rounded-tl-none shadow-md border-2 border-sky-200 relative">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-2xl">👋</span>
+                            <h2 class="text-2xl font-bold text-sky-800">¡Hola, soy GOTI! Tu guía del agua</h2>
+                        </div>
+                        <p id="goti-speech" class="text-slate-700 text-lg leading-relaxed">
+                            ¡Bienvenido al laboratorio supersecreto del agua! Hoy descubriremos por qué el agua es la sustancia más increíble del planeta Tierra. ¿Estás listo para explorar sus superpoderes?
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <div class="bg-sky-50 border border-sky-200 rounded-2xl p-3 flex items-center gap-3 shadow-sm flex-1 min-w-[200px]">
+                            <span class="text-3xl">🧪</span>
+                            <div>
+                                <h4 class="font-bold text-sky-900 text-sm">Laboratorio Vivo</h4>
+                                <p class="text-xs text-sky-700">Cambia temperaturas y mueves moléculas</p>
+                            </div>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-center gap-3 shadow-sm flex-1 min-w-[200px]">
+                            <span class="text-3xl">🏆</span>
+                            <div>
+                                <h4 class="font-bold text-amber-900 text-sm">Misión Detective</h4>
+                                <p class="text-xs text-amber-700">Gana tu Diploma Oficial de Super Detective</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="estados" class="glass-panel rounded-3xl p-6 md:p-8 shadow-xl border-4 border-white">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 bg-sky-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md">
+                    <i class="fa-solid fa-temperature-high"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-sky-900">1. Laboratorio de Estados del Agua</h2>
+                    <p class="text-slate-600 font-medium">¡Ajusta el termómetro y observa cómo cambian las moléculas de H₂O!</p>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-6 items-center">
+                <!-- Molecule Simulation Canvas -->
+                <div class="lg:col-span-7 bg-slate-900 rounded-2xl p-4 shadow-inner relative overflow-hidden flex flex-col items-center">
+                    <div class="w-full flex justify-between items-center mb-2 px-2 z-10">
+                        <span id="state-badge" class="px-4 py-1.5 rounded-full text-white font-bold text-sm shadow-md bg-blue-500">
+                            Sólido (Hielo)
+                        </span>
+                        <span id="temp-display" class="text-2xl font-bold text-yellow-400 font-mono">
+                            -10°C
+                        </span>
+                    </div>
+
+                    <!-- Molecule Visualizer Canvas -->
+                    <canvas id="moleculeCanvas" class="w-full h-64 rounded-xl bg-slate-950 border border-slate-800 cursor-crosshair"></canvas>
+                    
+                    <div class="w-full flex justify-between text-xs text-slate-400 mt-2 px-1">
+                        <span>❄️ Congelación (<0°C)</span>
+                        <span>💧 Líquido (0-99°C)</span>
+                        <span>💨 Vapor (≥100°C)</span>
+                    </div>
+                </div>
+
+                <!-- Controls & Explanation Panel -->
+                <div class="lg:col-span-5 space-y-5">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <label for="tempSlider" class="block font-bold text-slate-700 mb-2 flex justify-between">
+                            <span>🌡️ Control de Temperatura:</span>
+                            <span id="sliderValText" class="text-sky-600 font-bold">-10°C</span>
+                        </label>
+                        <input type="range" id="tempSlider" min="-20" max="120" value="-10" step="1" oninput="updateTemperature(this.value)">
+                        
+                        <!-- Temperature Quick Buttons -->
+                        <div class="grid grid-cols-3 gap-2 mt-4">
+                            <button onclick="setTemp(-15)" class="py-1.5 px-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg text-xs font-bold transition">
+                                ❄️ -15°C Hielo
+                            </button>
+                            <button onclick="setTemp(25)" class="py-1.5 px-2 bg-teal-100 hover:bg-teal-200 text-teal-800 rounded-lg text-xs font-bold transition">
+                                💧 25°C Agua
+                            </button>
+                            <button onclick="setTemp(105)" class="py-1.5 px-2 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg text-xs font-bold transition">
+                                ☁️ 105°C Vapor
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Process & Phase Change Explanation -->
+                    <div class="bg-sky-50 border-2 border-sky-200 p-5 rounded-2xl">
+                        <h4 id="process-title" class="font-bold text-sky-900 text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-snowflake text-sky-500"></i> Estado Sólido
+                        </h4>
+                        <p id="process-desc" class="text-sm text-slate-700 mt-2 leading-relaxed">
+                            Las moléculas de agua están muy unidas y rígidas formando cristales de hielo. ¡Casi no se mueven, solo vibran!
+                        </p>
+                        <div id="process-transition" class="mt-3 pt-3 border-t border-sky-200 text-xs font-bold text-sky-700 flex items-center gap-1">
+                            <span>🔄 Cambio de estado:</span> <span id="transition-name" class="text-sky-900 font-extrabold">Solidificación</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="propiedades" class="glass-panel rounded-3xl p-6 md:p-8 shadow-xl border-4 border-white space-y-8">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-teal-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md">
+                    <i class="fa-solid fa-vial"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-teal-900">2. Experimentos: Las Propiedades del Agua</h2>
+                    <p class="text-slate-600 font-medium">Descubre por qué el agua es única resolviendo estos mini-experimentos.</p>
+                </div>
+            </div>
+
+            <!-- Subsection A: Las 3 'I' del Agua -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <span class="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm">Superpoderes</span> 
+                    Las 3 "I" del Agua Pura
+                </h3>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <!-- Card 1 -->
+                    <div onclick="playSynthSound('pop'); alertProperty('Incolora', 'El agua pura no tiene color, ¡es totalmente transparente!')" 
+                         class="interactive-card bg-gradient-to-br from-cyan-50 to-blue-100 p-5 rounded-2xl border-2 border-cyan-200 cursor-pointer text-center">
+                        <div class="text-4xl mb-2">👁️</div>
+                        <h4 class="font-bold text-cyan-900 text-lg">INCOLORA</h4>
+                        <p class="text-xs text-slate-600 mt-1">No tiene color. Puedes ver a través de ella perfectamente.</p>
+                        <span class="inline-block mt-3 text-xs bg-cyan-200 text-cyan-800 font-bold px-2 py-1 rounded-full">¡Toca para probar!</span>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div onclick="playSynthSound('pop'); alertProperty('Inodora', 'El agua pura no tiene ningún tipo de olor. ¡Pruébalo con tu nariz!')" 
+                         class="interactive-card bg-gradient-to-br from-teal-50 to-emerald-100 p-5 rounded-2xl border-2 border-teal-200 cursor-pointer text-center">
+                        <div class="text-4xl mb-2">👃</div>
+                        <h4 class="font-bold text-teal-900 text-lg">INODORA</h4>
+                        <p class="text-xs text-slate-600 mt-1">No tiene olor. El agua limpia nunca huele a nada.</p>
+                        <span class="inline-block mt-3 text-xs bg-teal-200 text-teal-800 font-bold px-2 py-1 rounded-full">¡Toca para probar!</span>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div onclick="playSynthSound('pop'); alertProperty('Insípida', 'El agua pura no tiene sabor. ¡Es refrescante y neutra!')" 
+                         class="interactive-card bg-gradient-to-br from-sky-50 to-indigo-100 p-5 rounded-2xl border-2 border-sky-200 cursor-pointer text-center">
+                        <div class="text-4xl mb-2">👅</div>
+                        <h4 class="font-bold text-indigo-900 text-lg">INSÍPIDA</h4>
+                        <p class="text-xs text-slate-600 mt-1">No tiene sabor. Ni dulce, ni salada, ni amarga.</p>
+                        <span class="inline-block mt-3 text-xs bg-sky-200 text-indigo-800 font-bold px-2 py-1 rounded-full">¡Toca para probar!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subsection B: Solubility Lab -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                    <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm">Laboratorio 1</span> 
+                    ¿Se disuelve o no? (Solubilidad)
+                </h3>
+                <p class="text-sm text-slate-600 mb-6">El agua es el <strong>solvente universal</strong>. Selecciona un ingrediente, échalo al vaso y presiona "Mezclar".</p>
+
+                <div class="grid md:grid-cols-12 gap-6 items-center">
+                    <!-- Ingredients Selector -->
+                    <div class="md:col-span-5 space-y-3">
+                        <button onclick="selectIngredient('sal')" id="btn-sal" class="ing-btn w-full p-3 rounded-xl border-2 border-slate-200 flex items-center justify-between hover:bg-slate-50 transition text-left">
+                            <span class="font-bold text-slate-700">🧂 Sal de Mesa</span>
+                            <span class="text-xs bg-slate-100 px-2 py-1 rounded">Sólido</span>
+                        </button>
+                        <button onclick="selectIngredient('azucar')" id="btn-azucar" class="ing-btn w-full p-3 rounded-xl border-2 border-slate-200 flex items-center justify-between hover:bg-slate-50 transition text-left">
+                            <span class="font-bold text-slate-700">🍬 Azúcar</span>
+                            <span class="text-xs bg-slate-100 px-2 py-1 rounded">Sólido</span>
+                        </button>
+                        <button onclick="selectIngredient('aceite')" id="btn-aceite" class="ing-btn w-full p-3 rounded-xl border-2 border-slate-200 flex items-center justify-between hover:bg-slate-50 transition text-left">
+                            <span class="font-bold text-slate-700">🌻 Aceite de Cocina</span>
+                            <span class="text-xs bg-slate-100 px-2 py-1 rounded">Líquido</span>
+                        </button>
+                        <button onclick="selectIngredient('arena')" id="btn-arena" class="ing-btn w-full p-3 rounded-xl border-2 border-slate-200 flex items-center justify-between hover:bg-slate-50 transition text-left">
+                            <span class="font-bold text-slate-700">🏖️ Arena del Parque</span>
+                            <span class="text-xs bg-slate-100 px-2 py-1 rounded">Sólido</span>
+                        </button>
+
+                        <button onclick="mixIngredient()" id="mix-btn" class="w-full py-3 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-lg disabled:opacity-50" disabled>
+                            <i class="fa-solid fa-flask-vial"></i> ¡Mezclar con Cuchara!
+                        </button>
+                    </div>
+
+                    <!-- Beaker Canvas Visualizer -->
+                    <div class="md:col-span-7 bg-slate-100 p-6 rounded-2xl border border-slate-200 flex flex-col items-center justify-center min-h-[260px] relative">
+                        <div class="relative w-44 h-56 bg-sky-100/60 border-b-8 border-x-4 border-sky-300 rounded-b-3xl overflow-hidden shadow-inner flex flex-col justify-end">
+                            <!-- Water Fill -->
+                            <div class="w-full h-3/4 bg-sky-400/40 relative">
+                                <!-- Water Surface Waves -->
+                                <div class="absolute top-0 left-0 w-full h-2 bg-sky-300/50 animate-pulse"></div>
+                                <!-- Ingredient Visual Layer -->
+                                <div id="beaker-contents" class="w-full h-full relative"></div>
+                            </div>
+                            <!-- Spoon Animation -->
+                            <div id="spoon" class="absolute -top-12 left-1/2 -translate-x-1/2 text-4xl opacity-0 transition-all duration-500">🥄</div>
+                        </div>
+
+                        <!-- Result Box -->
+                        <div id="solubility-result" class="mt-4 text-center font-bold text-sm text-slate-700 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200 min-h-[42px] flex items-center justify-center w-full">
+                            Elige un ingrediente para comenzar el experimento.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subsection C: Buoyancy & Density Lab -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Laboratorio 2</span> 
+                    ¿Flota o se hunde? (Densidad)
+                </h3>
+                <p class="text-sm text-slate-600 mb-4">Haz clic en los objetos para lanzarlos al estanque y ver si son más o menos densos que el agua.</p>
+
+                <div class="grid md:grid-cols-12 gap-6">
+                    <!-- Objects Panel -->
+                    <div class="md:col-span-4 grid grid-cols-2 gap-3">
+                        <button onclick="dropObject('corcho')" class="p-4 bg-amber-50 hover:bg-amber-100 border-2 border-amber-200 rounded-2xl flex flex-col items-center gap-1 transition shadow-sm">
+                            <span class="text-3xl">🪵</span>
+                            <span class="font-bold text-xs text-amber-900">Corcho</span>
+                        </button>
+                        <button onclick="dropObject('piedra')" class="p-4 bg-stone-50 hover:bg-stone-100 border-2 border-stone-200 rounded-2xl flex flex-col items-center gap-1 transition shadow-sm">
+                            <span class="text-3xl">🪨</span>
+                            <span class="font-bold text-xs text-stone-900">Piedra</span>
+                        </button>
+                        <button onclick="dropObject('moneda')" class="p-4 bg-yellow-50 hover:bg-yellow-100 border-2 border-yellow-200 rounded-2xl flex flex-col items-center gap-1 transition shadow-sm">
+                            <span class="text-3xl">🪙</span>
+                            <span class="font-bold text-xs text-yellow-900">Moneda</span>
+                        </button>
+                        <button onclick="dropObject('hoja')" class="p-4 bg-green-50 hover:bg-green-100 border-2 border-green-200 rounded-2xl flex flex-col items-center gap-1 transition shadow-sm">
+                            <span class="text-3xl">🍃</span>
+                            <span class="font-bold text-xs text-green-900">Hoja de Árbol</span>
+                        </button>
+                    </div>
+
+                    <!-- Water Tank Simulation -->
+                    <div class="md:col-span-8 bg-gradient-to-b from-sky-200 via-sky-400 to-blue-600 rounded-2xl p-4 relative h-64 overflow-hidden shadow-inner border-4 border-sky-300">
+                        <!-- Water Surface Line -->
+                        <div class="absolute top-12 left-0 w-full h-1 bg-white/60 shadow-sm"></div>
+                        <div class="absolute top-2 left-4 text-xs font-bold text-sky-900 bg-white/80 px-2 py-0.5 rounded-full">Aire</div>
+                        <div class="absolute top-14 left-4 text-xs font-bold text-white bg-blue-800/40 px-2 py-0.5 rounded-full">Agua</div>
+
+                        <!-- Tank Container for Objects -->
+                        <div id="water-tank" class="w-full h-full relative">
+                            <!-- Objects will spawn here via JS -->
+                        </div>
+
+                        <!-- Density Explanation Banner -->
+                        <div id="density-msg" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-white/95 text-slate-800 text-xs font-bold px-4 py-2 rounded-full shadow-lg border border-sky-300 text-center max-w-[90%] transition-all">
+                            ¡Haz clic en un objeto para probar su densidad!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tipos" class="glass-panel rounded-3xl p-6 md:p-8 shadow-xl border-4 border-white space-y-8">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md">
+                    <i class="fa-solid fa-earth-americas"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-blue-900">3. Explorador: Tipos de Agua y el Planeta</h2>
+                    <p class="text-slate-600 font-medium">¿Dónde está el agua en la Tierra y cómo la clasificamos?</p>
+                </div>
+            </div>
+
+            <!-- Earth Water Graph (97% Salt vs 3% Fresh) -->
+            <div class="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-2xl p-6 text-white shadow-lg">
+                <div class="grid md:grid-cols-12 gap-6 items-center">
+                    <div class="md:col-span-4 flex flex-col items-center text-center">
+                        <div class="text-6xl mb-2 animate-bounce">🌍</div>
+                        <h4 class="font-bold text-xl text-sky-200">El Planeta Azul</h4>
+                        <p class="text-xs text-sky-300 mt-1">El 71% de la superficie de la Tierra está cubierta de agua.</p>
+                    </div>
+
+                    <div class="md:col-span-8 space-y-4">
+                        <h4 class="font-bold text-lg text-amber-300">¿Cómo se reparte el agua en la Tierra?</h4>
+                        
+                        <!-- Visual Bar Graphic -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs font-bold">
+                                <span>🌊 Agua Salada (Océanos y mares): 97%</span>
+                                <span>🧊 Agua Dulce: 3%</span>
+                            </div>
+                            <div class="w-full h-8 bg-slate-800 rounded-full overflow-hidden flex p-1 border border-sky-400">
+                                <div class="h-full bg-blue-500 rounded-l-full flex items-center justify-center text-[10px] font-bold" style="width: 97%;">97% Salada</div>
+                                <div class="h-full bg-emerald-400 rounded-r-full flex items-center justify-center text-[10px] font-bold text-slate-900" style="width: 3%;">3%</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/10 p-3 rounded-xl border border-white/20 text-xs leading-relaxed text-sky-100">
+                            💡 <strong>Dato Curioso con GOTI:</strong> De ese pequeñísimo <strong>3% de agua dulce</strong>, ¡la mayoría está congelada en los polos o bajo tierra! Solo un <strong>0.01%</strong> está disponible para consumir en ríos y lagos. ¡Por eso debemos cuidarla!
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Water Types Cards -->
+            <div class="grid md:grid-cols-3 gap-4">
+                <!-- Card 1 -->
+                <div class="interactive-card bg-white p-5 rounded-2xl border-2 border-emerald-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-3xl">🏔️</span>
+                            <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full">Naturaleza</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-lg mb-1">Agua Dulce</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Tiene muy baja salinidad. Se encuentra en ríos, lagos, lagunas y glaciares.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-bold text-emerald-600 flex items-center gap-1">
+                        <span>Origen:</span> Lluvia, nieve y deshielo.
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="interactive-card bg-white p-5 rounded-2xl border-2 border-blue-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-3xl">🌊</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-full">Océanos</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-lg mb-1">Agua Salada</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Contiene alta cantidad de sales disueltas (cloruro de sodio). Está en mares y océanos. No es apta para beber directamente.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-bold text-blue-600 flex items-center gap-1">
+                        <span>Origen:</span> Océanos globales.
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="interactive-card bg-white p-5 rounded-2xl border-2 border-cyan-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-3xl">🚰</span>
+                            <span class="bg-cyan-100 text-cyan-800 text-xs font-bold px-2.5 py-1 rounded-full">¡Para Beber!</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-lg mb-1">Agua Potable</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Ha sido tratada e higienizada en plantas potabilizadoras. Es 100% libre de microbios y limpia para el consumo humano.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-bold text-cyan-600 flex items-center gap-1">
+                        <span>Origen:</span> Grifo o canilla tratada.
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="interactive-card bg-white p-5 rounded-2xl border-2 border-purple-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-3xl">🍾</span>
+                            <span class="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-full">Nutritiva</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-lg mb-1">Agua Mineral</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Nace en manantiales subterráneos y contiene minerales muy saludables para nuestro cuerpo como calcio y magnesio.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-bold text-purple-600 flex items-center gap-1">
+                        <span>Origen:</span> Manantiales profundos.
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="interactive-card bg-white p-5 rounded-2xl border-2 border-stone-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-3xl">☣️</span>
+                            <span class="bg-stone-200 text-stone-800 text-xs font-bold px-2.5 py-1 rounded-full">Usada</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-lg mb-1">Agua Residual</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Es el agua que ya fue utilizada en hogares o industrias (lavado, sanitarios). Necesita pasar por purificación para reutilizarse.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-bold text-stone-600 flex items-center gap-1">
+                        <span>Origen:</span> Desagües y alcantarillado.
+                    </div>
+                </div>
+
+                <!-- Interactive Fun Fact Card -->
+                <div class="interactive-card bg-gradient-to-br from-amber-400 to-amber-500 p-5 rounded-2xl text-amber-950 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="text-3xl mb-2">⭐</div>
+                        <h4 class="font-bold text-lg mb-1">¡Goti Desafío!</h4>
+                        <p class="text-xs font-semibold leading-relaxed">
+                            ¿Sabías que el agua que bebes hoy puede haber sido la misma agua que bebió un dinosaurio T-Rex hace millones de años? ¡El ciclo del agua nunca se detiene!
+                        </p>
+                    </div>
+                    <button onclick="scrollToSection('trivia')" class="mt-3 bg-white text-amber-900 font-bold text-xs py-2 px-3 rounded-xl shadow hover:bg-amber-50 transition">
+                        ¡Acepto el Desafío! 🚀
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="trivia" class="glass-panel rounded-3xl p-6 md:p-8 shadow-xl border-4 border-white">
+            <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-amber-400 rounded-2xl flex items-center justify-center text-amber-950 text-2xl shadow-md">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-amber-900">4. Misión: Super Detective del Agua</h2>
+                        <p class="text-slate-600 font-medium">Demuestra tus conocimientos y consigue tu Diploma Oficial.</p>
+                    </div>
+                </div>
+
+                <!-- Score Counter Badge -->
+                <div class="bg-amber-100 border-2 border-amber-300 px-4 py-2 rounded-2xl flex items-center gap-2">
+                    <span class="text-2xl">⭐</span>
+                    <div>
+                        <div class="text-[10px] font-bold text-amber-800 uppercase">Puntos Detective</div>
+                        <div id="quiz-score" class="text-xl font-bold text-amber-900">0 / 5</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Container -->
+            <div id="quiz-container" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <!-- Question Card render dynamically -->
+            </div>
+
+            <!-- Certificate Award Modal (Hidden initially) -->
+            <div id="certificate-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-3xl p-6 md:p-8 max-w-2xl w-full border-8 border-amber-300 shadow-2xl relative text-center space-y-4 animate-bounce-once">
+                    <button onclick="closeCertificate()" class="absolute top-4 right-4 w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-full font-bold text-slate-600 transition">✕</button>
+                    
+                    <div class="text-5xl">🏆</div>
+                    <h3 class="text-3xl font-bold text-amber-900 font-heading">¡DIPLOMA DE SUPER DETECTIVE DEL AGUA!</h3>
+                    <p class="text-sm text-slate-600">Otorgado con honor por haber completado con éxito todas las pruebas del laboratorio de Goti.</p>
+
+                    <!-- Certificate Content Box -->
+                    <div class="bg-amber-50/50 border-2 border-dashed border-amber-300 p-6 rounded-2xl space-y-3">
+                        <p class="text-xs font-bold text-amber-800 uppercase tracking-widest">Certificado a Nombre de:</p>
+                        <input type="text" id="student-name" placeholder="Escribe tu Nombre y Apellido aquí" class="w-full text-center text-xl font-bold text-sky-900 bg-white border-2 border-sky-300 rounded-xl py-2 px-4 focus:outline-none focus:border-sky-500 shadow-sm">
+                        <p class="text-xs text-slate-500">Demostró un conocimiento experto en los Estados, Propiedades y Conservación del Agua.</p>
+                        <div class="flex justify-around items-center pt-2">
+                            <div class="text-center">
+                                <span class="text-2xl">💧</span>
+                                <div class="text-[10px] font-bold text-sky-800">Firma de GOTI</div>
+                            </div>
+                            <div class="w-16 h-16 bg-amber-400 rounded-full flex items-center justify-center text-amber-950 font-bold text-xs shadow-md border-2 border-white">
+                                OFICIAL
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap justify-center gap-3 pt-2">
+                        <button onclick="printDiploma()" class="px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl shadow-lg transition flex items-center gap-2">
+                            <i class="fa-solid fa-print"></i> Imprimir Diploma
+                        </button>
+                        <button onclick="restartQuiz()" class="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl shadow transition">
+                            🔄 Jugar de Nuevo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-6xl mx-auto px-4 mt-12 text-center text-slate-600 text-xs space-y-2">
+        <p>¡Aventura Educativa con Goti! Creado para niños de 4° Grado de Primaria 💧 Sustentabilidad y Ciencia.</p>
+        <p>© 2026 Laboratorio Interactivo del Agua - ¡Aprender es Divertido!</p>
+    </footer>
+
+    <script>
+        /* ==========================================================================
+           1. WEB AUDIO SYNTHESIZER (NO EXTERNAL AUDIO FILES)
+           ========================================================================== */
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSynthSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'pop') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'splash') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(60, now + 0.25);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'mix') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(500, now + 0.15);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+        }
+
+        /* ==========================================================================
+           2. GOTI MASCOT SVG & DYNAMIC EXPRESSIONS
+           ========================================================================== */
+        const gotiPhrases = [
+            "¡El 60% de tu cuerpo está compuesto de agua! 🧠💧",
+            "¡En el hielo, las moléculas de agua están congeladas como estatuas! ❄️",
+            "¡Cuando hierves agua, se transforma en vapor y vuela libre! ☁️",
+            "¡Cuida el agua cerrando la canilla mientras te cepillas los dientes! 🪥",
+            "¡El agua salada de los océanos no se puede beber porque nos deshidrata! 🌊",
+            "¡El agua pura no tiene olor, ni color, ni sabor! 👁️👃👅"
+        ];
+
+        function renderGoti(expression = 'happy') {
+            const container = document.getElementById('goti-svg-container');
+            let eyesSVG = `<circle cx="85" cy="105" r="7" fill="#1e293b"/><circle cx="115" cy="105" r="7" fill="#1e293b"/>`;
+            let mouthSVG = `<path d="M 85 125 Q 100 140 115 125" stroke="#1e293b" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+            let accessory = ``;
+
+            if (expression === 'frozen') {
+                eyesSVG = `<path d="M 78 100 L 92 110 M 92 100 L 78 110" stroke="#1e293b" stroke-width="3"/><path d="M 108 100 L 122 110 M 122 100 L 108 110" stroke="#1e293b" stroke-width="3"/>`;
+                mouthSVG = `<line x1="85" y1="128" x2="115" y2="128" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>`;
+                accessory = `<text x="140" y="70" font-size="28">❄️</text>`;
+            } else if (expression === 'steaming') {
+                eyesSVG = `<circle cx="85" cy="105" r="9" fill="#1e293b"/><circle cx="115" cy="105" r="9" fill="#1e293b"/><circle cx="87" cy="103" r="3" fill="#fff"/><circle cx="117" cy="103" r="3" fill="#fff"/>`;
+                mouthSVG = `<circle cx="100" cy="130" r="8" fill="#1e293b"/>`;
+                accessory = `<text x="40" y="50" font-size="28" class="animate-bounce">💨</text>`;
+            }
+
+            container.innerHTML = `
+                <svg viewBox="0 0 200 200" class="w-full h-full">
+                    <defs>
+                        <linearGradient id="gotiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#38bdf8"/>
+                            <stop offset="60%" stop-color="#0284c7"/>
+                            <stop offset="100%" stop-color="#0369a1"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Main Body Water Drop -->
+                    <path d="M 100 20 C 130 80, 170 120, 170 150 A 70 70 0 0 1 30 150 C 30 120, 70 80, 100 20 Z" fill="url(#gotiGrad)" stroke="#ffffff" stroke-width="4"/>
+                    <!-- Shine highlight -->
+                    <path d="M 75 60 C 60 90, 50 120, 50 140" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.6" fill="none"/>
+                    <!-- Cheeks -->
+                    <circle cx="70" cy="118" r="8" fill="#f43f5e" opacity="0.4"/>
+                    <circle cx="130" cy="118" r="8" fill="#f43f5e" opacity="0.4"/>
+                    <!-- Face -->
+                    ${eyesSVG}
+                    ${mouthSVG}
+                    ${accessory}
+                </svg>
+            `;
+        }
+
+        function reactGoti() {
+            playSynthSound('pop');
+            const speech = document.getElementById('goti-speech');
+            const randomPhrase = gotiPhrases[Math.floor(Math.random() * gotiPhrases.length)];
+            speech.textContent = randomPhrase;
+        }
+
+        /* ==========================================================================
+           3. VIRTUAL MOLECULES CANVAS SIMULATOR
+           ========================================================================== */
+        const canvas = document.getElementById('moleculeCanvas');
+        const ctx = canvas.getContext('2d');
+        let currentTemp = -10;
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth - 32;
+            canvas.height = 240;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Molecule Particles
+        const numMolecules = 28;
+        let molecules = [];
+
+        for (let i = 0; i < numMolecules; i++) {
+            molecules.push({
+                x: Math.random() * (canvas.width - 40) + 20,
+                y: Math.random() * (canvas.height - 40) + 20,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                angle: Math.random() * Math.PI * 2
+            });
+        }
+
+        function updateTemperature(val) {
+            currentTemp = parseInt(val);
+            document.getElementById('temp-display').textContent = `${currentTemp}°C`;
+            document.getElementById('sliderValText').textContent = `${currentTemp}°C`;
+
+            const badge = document.getElementById('state-badge');
+            const title = document.getElementById('process-title');
+            const desc = document.getElementById('process-desc');
+            const transName = document.getElementById('transition-name');
+
+            if (currentTemp < 0) {
+                badge.textContent = "Sólido (Hielo)";
+                badge.className = "px-4 py-1.5 rounded-full text-white font-bold text-sm shadow-md bg-blue-600";
+                title.innerHTML = `<i class="fa-solid fa-snowflake text-blue-500"></i> Estado Sólido (Hielo)`;
+                desc.textContent = "Las moléculas de agua están fijas en una red cristalina rígida. Solo vibran en su lugar sin desplazarse.";
+                transName.textContent = "Solidificación / Congelación";
+                renderGoti('frozen');
+            } else if (currentTemp >= 0 && currentTemp < 100) {
+                badge.textContent = "Líquido (Agua)";
+                badge.className = "px-4 py-1.5 rounded-full text-white font-bold text-sm shadow-md bg-teal-500";
+                title.innerHTML = `<i class="fa-solid fa-droplet text-teal-500"></i> Estado Líquido`;
+                desc.textContent = "Las moléculas fluyen y se deslizan unas sobre otras adaptándose a la forma del recipiente que las contiene.";
+                transName.textContent = currentTemp > 50 ? "Evaporación gradual" : "Fusión (Hielo derritiéndose)";
+                renderGoti('happy');
+            } else {
+                badge.textContent = "Gaseoso (Vapor)";
+                badge.className = "px-4 py-1.5 rounded-full text-white font-bold text-sm shadow-md bg-red-500";
+                title.innerHTML = `<i class="fa-solid fa-cloud text-red-500"></i> Estado Gaseoso (Vapor)`;
+                desc.textContent = "Las moléculas tienen mucha energía, están muy separadas y se mueven super rápido libremente por todo el espacio.";
+                transName.textContent = "Ebullición / Vaporización";
+                renderGoti('steaming');
+            }
+        }
+
+        function setTemp(val) {
+            playSynthSound('pop');
+            document.getElementById('tempSlider').value = val;
+            updateTemperature(val);
+        }
+
+        function drawMolecule(x, y, angle) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+
+            // Oxygen Atom (Red/Blue Center)
+            ctx.beginPath();
+            ctx.arc(0, 0, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#0284c7';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Hydrogen Atom 1
+            ctx.beginPath();
+            ctx.arc(-9, -8, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#e0f2fe';
+            ctx.fill();
+            ctx.stroke();
+
+            // Hydrogen Atom 2
+            ctx.beginPath();
+            ctx.arc(9, -8, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#e0f2fe';
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function animateMolecules() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const speedMultiplier = currentTemp < 0 ? 0.2 : (currentTemp >= 100 ? 5 : 1.5);
+
+            molecules.forEach((m, idx) => {
+                if (currentTemp < 0) {
+                    // Solid State: Lattice arrangement with small vibration
+                    const cols = 7;
+                    const row = Math.floor(idx / cols);
+                    const col = idx % cols;
+                    const targetX = 40 + col * (canvas.width - 80) / cols;
+                    const targetY = 120 + row * 30;
+
+                    m.x = targetX + (Math.random() - 0.5) * 2;
+                    m.y = targetY + (Math.random() - 0.5) * 2;
+                } else if (currentTemp >= 0 && currentTemp < 100) {
+                    // Liquid State: Sinks to bottom, flows fluidly
+                    m.x += m.vx * speedMultiplier;
+                    m.y += m.vy * speedMultiplier;
+
+                    // Gravity effect
+                    m.vy += 0.05;
+
+                    // Boundaries
+                    if (m.x < 15 || m.x > canvas.width - 15) m.vx *= -1;
+                    if (m.y > canvas.height - 20) {
+                        m.y = canvas.height - 20;
+                        m.vy *= -0.7;
+                    }
+                    if (m.y < canvas.height * 0.4) m.vy += 0.2; // Keep liquid near bottom
+                } else {
+                    // Gas State: Rapid flying everywhere
+                    m.x += m.vx * speedMultiplier;
+                    m.y += m.vy * speedMultiplier;
+
+                    if (m.x < 15 || m.x > canvas.width - 15) m.vx *= -1;
+                    if (m.y < 15 || m.y > canvas.height - 15) m.vy *= -1;
+                }
+
+                drawMolecule(m.x, m.y, m.angle);
+            });
+
+            requestAnimationFrame(animateMolecules);
+        }
+
+        /* ==========================================================================
+           4. EXPERIMENTS HUB: SOLUBILITY & BUOYANCY
+           ========================================================================== */
+        let selectedIng = null;
+
+        function alertProperty(title, desc) {
+            alert(`✨ ¡Propiedad: ${title}!\n\n${desc}`);
+        }
+
+        function selectIngredient(ing) {
+            playSynthSound('pop');
+            selectedIng = ing;
+
+            document.querySelectorAll('.ing-btn').forEach(b => b.classList.remove('border-teal-500', 'bg-teal-50'));
+            const activeBtn = document.getElementById(`btn-${ing}`);
+            activeBtn.classList.add('border-teal-500', 'bg-teal-50');
+
+            document.getElementById('mix-btn').disabled = false;
+            document.getElementById('solubility-result').textContent = `Seleccionaste: ${ing.toUpperCase()}. ¡Presiona "Mezclar con Cuchara"!`;
+        }
+
+        function mixIngredient() {
+            if (!selectedIng) return;
+            playSynthSound('mix');
+
+            const spoon = document.getElementById('spoon');
+            const contents = document.getElementById('beaker-contents');
+            const resultBox = document.getElementById('solubility-result');
+
+            // Stirring Spoon Animation
+            spoon.style.opacity = '1';
+            spoon.style.top = '10px';
+            
+            setTimeout(() => {
+                spoon.style.transform = 'translateX(-50%) rotate(20deg)';
+            }, 200);
+            setTimeout(() => {
+                spoon.style.transform = 'translateX(-50%) rotate(-20deg)';
+            }, 500);
+            setTimeout(() => {
+                spoon.style.opacity = '0';
+                spoon.style.top = '-48px';
+            }, 900);
+
+            // Render Mixture Effect
+            setTimeout(() => {
+                if (selectedIng === 'sal' || selectedIng === 'azucar') {
+                    contents.innerHTML = `<div class="absolute inset-0 bg-sky-300/20 transition-all duration-700"></div>`;
+                    resultBox.innerHTML = `✅ <span class="text-emerald-700 font-bold ml-1">¡ES SOLUBLE!</span> La ${selectedIng} se disolvió completamente en las moléculas de agua.`;
+                    playSynthSound('success');
+                } else if (selectedIng === 'aceite') {
+                    contents.innerHTML = `<div class="absolute top-0 left-0 w-full h-4 bg-amber-400/80 rounded-t-sm shadow-sm"></div>`;
+                    resultBox.innerHTML = `❌ <span class="text-amber-700 font-bold ml-1">¡NO ES SOLUBLE!</span> El aceite flota en la superficie porque no se mezcla con el agua (Insoluble/Hidrófobo).`;
+                    playSynthSound('error');
+                } else if (selectedIng === 'arena') {
+                    contents.innerHTML = `<div class="absolute bottom-0 left-0 w-full h-4 bg-amber-700/80 rounded-b-xl"></div>`;
+                    resultBox.innerHTML = `❌ <span class="text-amber-900 font-bold ml-1">¡NO ES SOLUBLE!</span> La arena se sedimenta en el fondo del recipiente sin disolverse.`;
+                    playSynthSound('error');
+                }
+            }, 900);
+        }
+
+        function dropObject(obj) {
+            playSynthSound('splash');
+            const tank = document.getElementById('water-tank');
+            const msg = document.getElementById('density-msg');
+
+            const itemElem = document.createElement('div');
+            itemElem.className = 'absolute text-3xl transition-all duration-1000 ease-bounce cursor-pointer';
+
+            if (obj === 'corcho') {
+                itemElem.textContent = '🪵';
+                itemElem.style.left = '20%';
+                itemElem.style.top = '10px'; // Floats at surface
+                msg.innerHTML = `🟢 <strong>¡El Corcho FLOTA!</strong> Es menos denso que el agua.`;
+            } else if (obj === 'hoja') {
+                itemElem.textContent = '🍃';
+                itemElem.style.left = '40%';
+                itemElem.style.top = '12px'; // Floats at surface
+                msg.innerHTML = `🟢 <strong>¡La Hoja FLOTA!</strong> Su estructura es ligera y menos densa.`;
+            } else if (obj === 'piedra') {
+                itemElem.textContent = '🪨';
+                itemElem.style.left = '60%';
+                itemElem.style.top = '180px'; // Sinks to bottom
+                msg.innerHTML = `🔴 <strong>¡La Piedra SE HUNDE!</strong> Es más densa que el agua.`;
+            } else if (obj === 'moneda') {
+                itemElem.textContent = '🪙';
+                itemElem.style.left = '80%';
+                itemElem.style.top = '185px'; // Sinks to bottom
+                msg.innerHTML = `🔴 <strong>¡La Moneda SE HUNDE!</strong> El metal es muy pesado y denso.`;
+            }
+
+            tank.appendChild(itemElem);
+
+            // Remove old items if too many
+            if (tank.children.length > 6) {
+                tank.removeChild(tank.firstChild);
+            }
+        }
+
+        /* ==========================================================================
+           5. TRIVIA GAME "MISIÓN SUPER DETECTIVE DEL AGUA"
+           ========================================================================== */
+        const quizQuestions = [
+            {
+                q: "¿A qué temperatura exacta el agua se convierte en HIELO sólido?",
+                options: ["100°C", "0°C", "50°C", "-100°C"],
+                correct: 1,
+                explanation: "¡Correcto! A los 0°C o menos, el agua se congela pasando de líquido a sólido."
+            },
+            {
+                q: "¿Qué significa que el agua pura es 'INCOLORA'?",
+                options: ["Que huele a flores", "Que no tiene sabor", "Que no tiene color (es transparente)", "Que flota en el aire"],
+                correct: 2,
+                explanation: "¡Muy bien! Incolora significa que no tiene color."
+            },
+            {
+                q: "Si intentas mezclar ACEITE con agua en un vaso, ¿qué sucede?",
+                options: ["Se disuelve totalmente", "El aceite flota arriba sin mezclarse", "El agua cambia a color verde", "El agua se congela"],
+                correct: 1,
+                explanation: "¡Excelente! El aceite no se mezcla y flota por ser menos denso."
+            },
+            {
+                q: "¿Qué porcentaje del agua total de la Tierra es agua salada?",
+                options: [" El 10%", "El 50%", "El 97%", "El 3%"],
+                correct: 2,
+                explanation: "¡Así es! El 97% del agua de nuestro planeta está en océanos y mares."
+            },
+            {
+                q: "¿Cuál es el único tipo de agua limpia y segura para beber?",
+                options: ["Agua Potable", "Agua Residual", "Agua Salada del mar", "Agua estancada"],
+                correct: 0,
+                explanation: "¡Súper Detective! El agua potable está desinfectada para cuidar nuestra salud."
+            }
+        ];
+
+        let currentQuestionIdx = 0;
+        let score = 0;
+
+        function renderQuizCard() {
+            const container = document.getElementById('quiz-container');
+            if (currentQuestionIdx >= quizQuestions.length) {
+                // Quiz Completed
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="text-6xl animate-bounce">🎉</div>
+                        <h3 class="text-2xl font-bold text-amber-900">¡Misión Completada con Éxito!</h3>
+                        <p class="text-slate-600">Obtuviste <strong>${score} de ${quizQuestions.length}</strong> puntos. ¡Eres un verdadero experto en el agua!</p>
+                        <button onclick="openCertificate()" class="px-8 py-4 bg-amber-400 hover:bg-amber-500 text-amber-950 font-extrabold text-lg rounded-2xl shadow-xl transition transform hover:scale-105">
+                            🏆 Reclamar Mi Diploma Oficial
+                        </button>
+                    </div>
+                `;
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+                return;
+            }
+
+            const q = quizQuestions[currentQuestionIdx];
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-800 bg-amber-100 px-3 py-1 rounded-full">Pregunta ${currentQuestionIdx + 1} de ${quizQuestions.length}</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800">${q.q}</h3>
+                    <div class="grid md:grid-cols-2 gap-3 pt-2">
+                        ${q.options.map((opt, idx) => `
+                            <button onclick="checkAnswer(${idx})" class="p-4 bg-slate-50 hover:bg-sky-50 border-2 border-slate-200 hover:border-sky-400 rounded-xl text-left font-bold text-slate-700 transition">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="quiz-feedback" class="hidden p-4 rounded-xl text-sm font-bold mt-3"></div>
+                </div>
+            `;
+        }
+
+        function checkAnswer(selectedIdx) {
+            const q = quizQuestions[currentQuestionIdx];
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.classList.remove('hidden');
+
+            if (selectedIdx === q.correct) {
+                playSynthSound('success');
+                score++;
+                document.getElementById('quiz-score').textContent = `${score} / ${quizQuestions.length}`;
+                feedback.className = "p-4 rounded-xl text-sm font-bold mt-3 bg-emerald-100 text-emerald-900 border border-emerald-300";
+                feedback.innerHTML = `✨ ${q.explanation}`;
+            } else {
+                playSynthSound('error');
+                feedback.className = "p-4 rounded-xl text-sm font-bold mt-3 bg-rose-100 text-rose-900 border border-rose-300";
+                feedback.innerHTML = `❌ ¡Casi! La respuesta correcta era: <strong>${q.options[q.correct]}</strong>.`;
+            }
+
+            setTimeout(() => {
+                currentQuestionIdx++;
+                renderQuizCard();
+            }, 2000);
+        }
+
+        function openCertificate() {
+            playSynthSound('success');
+            document.getElementById('certificate-modal').classList.remove('hidden');
+        }
+
+        function closeCertificate() {
+            document.getElementById('certificate-modal').classList.add('hidden');
+        }
+
+        function printDiploma() {
+            window.print();
+        }
+
+        function restartQuiz() {
+            currentQuestionIdx = 0;
+            score = 0;
+            document.getElementById('quiz-score').textContent = `0 / 5`;
+            closeCertificate();
+            renderQuizCard();
+        }
+
+        /* ==========================================================================
+           6. HELPER FUNCTIONS & INITIALIZATION
+           ========================================================================== */
+        function scrollToSection(id) {
+            playSynthSound('pop');
+            const elem = document.getElementById(id);
+            if (elem) {
+                elem.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function createFloatingBubbles() {
+            const container = document.getElementById('bubbles-container');
+            for (let i = 0; i < 15; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 30 + 10;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.animationDuration = `${Math.random() * 8 + 6}s`;
+                bubble.style.animationDelay = `${Math.random() * 5}s`;
+                container.appendChild(bubble);
+            }
+        }
+
+        // Window Load Initializer
+        window.onload = function() {
+            renderGoti('frozen');
+            updateTemperature(-10);
+            animateMolecules();
+            renderQuizCard();
+            createFloatingBubbles();
+        };
+    </script>
+</body>
+</html>
